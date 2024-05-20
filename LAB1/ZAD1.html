@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>Lab 1 zad 1</title>
+    <style>
+        body {
+            background-color: #DDDDDD;
+        }
+        canvas {
+            background-color: white;
+            display: block;
+        }
+        #canvasholder {
+            border: 2px solid black;
+            float: left;
+        }
+    </style>
+    <script>
+        "use strict";
+
+        var drawingCanvas;
+        var graphicsContext;
+        var pixelUnit;
+
+        function render() {
+            graphicsContext.scale(1.5, 1.5);
+            graphicsContext.clearRect(0, 0, 600, 600);
+            graphicsContext.beginPath();
+            graphicsContext.fillPoly(100, 100, 100, 225, 325, 225, 325, 100)
+            graphicsContext.fillStyle = "cyan";
+            graphicsContext.fill();
+            graphicsContext.stroke()
+            graphicsContext.beginPath();
+            graphicsContext.fillStyle = "white";
+            graphicsContext.strokeStyle = "white";
+            graphicsContext.fillCircle(160, 130, 8);
+            graphicsContext.fillCircle(250, 130, 8);
+            graphicsContext.fill();
+            graphicsContext.fillStyle = "black";
+            graphicsContext.strokeStyle = "black";
+            graphicsContext.fillCircle(160, 130, 4);
+            graphicsContext.fillCircle(250, 130, 4);
+            graphicsContext.fill();
+            graphicsContext.fillStyle = "white";
+            graphicsContext.fillCircle(160, 128.5, 1.5);
+            graphicsContext.fillCircle(248.8, 128.5, 2);
+            graphicsContext.fill();
+            graphicsContext.stroke();
+
+            graphicsContext.beginPath();
+            graphicsContext.fillStyle = "black";
+            graphicsContext.strokeStyle = "black";
+            graphicsContext.moveTo(185, 175);
+            graphicsContext.bezierCurveTo(195, 190, 215, 190, 225, 175);
+            graphicsContext.bezierCurveTo(215, 180, 195, 180, 185, 175);
+            graphicsContext.fill();
+            graphicsContext.moveTo(185, 170);
+            graphicsContext.bezierCurveTo(185, 175, 184.5, 175, 182, 177);
+            graphicsContext.moveTo(225, 170);
+            graphicsContext.bezierCurveTo(225, 175, 224.5, 175, 228.5, 177);
+            graphicsContext.stroke();
+
+            graphicsContext.beginPath();
+            graphicsContext.fillStyle = "white";
+            graphicsContext.moveTo(205, 179.5);
+            graphicsContext.lineTo(205, 182.5);
+            graphicsContext.lineTo(201, 182.5);
+            graphicsContext.lineTo(201, 179.5);
+            graphicsContext.moveTo(205, 182.5);
+            graphicsContext.lineTo(210, 182.5);
+            graphicsContext.lineTo(210, 179.5);
+            graphicsContext.lineTo(205, 179.5);
+            graphicsContext.lineTo(202, 179.5);
+            graphicsContext.fill();
+            graphicsContext.stroke();
+            graphicsContext.closePath();
+        }
+
+        function applyTransformations(left, right, bottom, top, preserveAspect) {
+            var displayAspect, windowAspect;
+            var excess;
+            var pixelWidth, pixelHeight;
+            if (preserveAspect) {
+                displayAspect = Math.abs(drawingCanvas.height / drawingCanvas.width);
+                windowAspect = Math.abs((top - bottom) / (right - left));
+                if (displayAspect > windowAspect) {
+                    excess = (top - bottom) * (displayAspect / windowAspect - 1);
+                    top = top + excess / 2;
+                    bottom = bottom - excess / 2;
+                } else if (displayAspect < windowAspect) {
+                    excess = (right - left) * (windowAspect / displayAspect - 1);
+                    right = right + excess / 2;
+                    left = left - excess / 2;
+                }
+            }
+            graphicsContext.scale(drawingCanvas.width / (right - left), drawingCanvas.height / (bottom - top));
+            graphicsContext.translate(-left, -top);
+            pixelWidth = Math.abs((right - left) / drawingCanvas.width);
+            pixelHeight = Math.abs((bottom - top) / drawingCanvas.height);
+            pixelUnit = Math.max(pixelWidth, pixelHeight);
+        }
+
+        function extendGraphicsContext(graphics) {
+            graphics.strokeLine = function (x1, y1, x2, y2) {
+                this.beginPath();
+                this.moveTo(x1, y1);
+                this.lineTo(x2, y2);
+                this.stroke();
+            }
+            graphics.fillCircle = function (x, y, r) {
+                this.beginPath();
+                this.arc(x, y, r, 0, 2 * Math.PI, false);
+                this.fill();
+            }
+            graphics.strokeCircle = function (x, y, radius) {
+                this.beginPath();
+                this.arc(x, y, radius, 0, 2 * Math.PI, false);
+                this.stroke();
+            }
+            graphics.fillPoly = function () {
+                if (arguments.length < 6)
+                    return;
+                this.beginPath();
+                this.moveTo(arguments[0], arguments[1]);
+                for (var i = 2; i + 1 < arguments.length; i = i + 2) {
+                    this.lineTo(arguments[i], arguments[i + 1]);
+                }
+                this.closePath();
+                this.fill();
+            }
+            graphics.strokePoly = function () {
+                if (arguments.length < 4)
+                    return;
+                this.beginPath();
+                this.moveTo(arguments[0], arguments[1]);
+                for (var i = 2; i + 1 < arguments.length; i = i + 2) {
+                    this.lineTo(arguments[i], arguments[i + 1]);
+                }
+                this.closePath();
+                this.stroke();
+            }
+            graphics.fillOval = function (x, y, horizontalRadius, verticalRadius) {
+                this.save();
+                this.translate(x, y);
+                this.scale(horizontalRadius, verticalRadius);
+                this.beginPath();
+                this.arc(0, 0, 1, 0, 2 * Math.PI, false);
+                this.restore();
+                this.fill();
+            }
+            graphics.strokeOval = function (x, y, horizontalRadius, verticalRadius) {
+                this.save();
+                this.translate(x, y);
+                this.scale(horizontalRadius, verticalRadius);
+                this.beginPath();
+                this.arc(0, 0, 1, 0, 2 * Math.PI, false);
+                this.restore();
+                this.stroke();
+            }
+            graphics.getRGB = function (x, y) {
+                var color = this.getImageData(x, y, 1, 1);
+                return color.data;
+            }
+        }
+
+        function initialize() {
+            try {
+                drawingCanvas = document.getElementById("canvas");
+                graphicsContext = drawingCanvas.getContext("2d");
+            } catch (e) {
+                document.getElementById("canvasholder").innerHTML =
+                    "Canvas graphics is not supported.<br>" +
+                    "An error occurred while initializing graphics.";
+            }
+            extendGraphicsContext(graphicsContext);
+            render();
+        }
+    </script>
+</head>
+
+<body onload="initialize()">
+    <div id="canvasholder">
+        <canvas id="canvas" width="600" height="600"></canvas>
+    </div>
+</body>
+
+</html>
